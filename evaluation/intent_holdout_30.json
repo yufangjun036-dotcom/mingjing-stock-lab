@@ -1,0 +1,422 @@
+[
+  {
+    "id": "E071",
+    "text": "筛选销售毛利率低于40%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "gross_margin",
+        "<",
+        "40"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E072",
+    "text": "筛选60日年化波动率低于40%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "volatility_60d",
+        "<",
+        "40"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E073",
+    "text": "筛选市盈率不超过45倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pe_ttm",
+        "<=",
+        "45"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E074",
+    "text": "筛选市净率不超过45倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pb_mrq",
+        "<=",
+        "45"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E075",
+    "text": "筛选营业收入同比不超过45%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "revenue_yoy",
+        "<=",
+        "45"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E076",
+    "text": "筛选归母净利润同比不超过45%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "profit_yoy",
+        "<=",
+        "45"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E077",
+    "text": "筛选销售毛利率不超过45%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "gross_margin",
+        "<=",
+        "45"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E078",
+    "text": "筛选60日年化波动率不超过45%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "volatility_60d",
+        "<=",
+        "45"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E079",
+    "text": "筛选市盈率等于50倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pe_ttm",
+        "=",
+        "50"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E080",
+    "text": "筛选市净率等于50倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pb_mrq",
+        "=",
+        "50"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E081",
+    "text": "筛选营业收入同比等于50%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "revenue_yoy",
+        "=",
+        "50"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E082",
+    "text": "筛选归母净利润同比等于50%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "profit_yoy",
+        "=",
+        "50"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E083",
+    "text": "筛选销售毛利率等于50%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "gross_margin",
+        "=",
+        "50"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E084",
+    "text": "筛选60日年化波动率等于50%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "volatility_60d",
+        "=",
+        "50"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E085",
+    "text": "筛选市盈率超过55倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pe_ttm",
+        ">",
+        "55"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E086",
+    "text": "筛选市净率超过55倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pb_mrq",
+        ">",
+        "55"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E087",
+    "text": "筛选营业收入同比超过55%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "revenue_yoy",
+        ">",
+        "55"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E088",
+    "text": "筛选归母净利润同比超过55%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "profit_yoy",
+        ">",
+        "55"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E089",
+    "text": "筛选销售毛利率超过55%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "gross_margin",
+        ">",
+        "55"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E090",
+    "text": "筛选60日年化波动率超过55%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "volatility_60d",
+        ">",
+        "55"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E091",
+    "text": "筛选市盈率至少60倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pe_ttm",
+        ">=",
+        "60"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E092",
+    "text": "筛选市净率至少60倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pb_mrq",
+        ">=",
+        "60"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E093",
+    "text": "筛选营业收入同比至少60%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "revenue_yoy",
+        ">=",
+        "60"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E094",
+    "text": "筛选归母净利润同比至少60%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "profit_yoy",
+        ">=",
+        "60"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E095",
+    "text": "筛选销售毛利率至少60%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "gross_margin",
+        ">=",
+        "60"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E096",
+    "text": "筛选60日年化波动率至少60%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "volatility_60d",
+        ">=",
+        "60"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E097",
+    "text": "筛选市盈率低于65倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pe_ttm",
+        "<",
+        "65"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E098",
+    "text": "筛选市净率低于65倍的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "pb_mrq",
+        "<",
+        "65"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E099",
+    "text": "筛选营业收入同比低于65%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "revenue_yoy",
+        "<",
+        "65"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  },
+  {
+    "id": "E100",
+    "text": "筛选归母净利润同比低于65%的股票。",
+    "mode": "exact",
+    "expected": [
+      [
+        "profit_yoy",
+        "<",
+        "65"
+      ]
+    ],
+    "split": "holdout",
+    "origin": "规则模板设计；数字为查询阈值，不是虚构金融数据"
+  }
+]

@@ -77,3 +77,7 @@ python3.13 -m venv .venv
 真实数据复验：`.venv/bin/python evaluation/run_acceptance.py data --output ../acceptance/new_data.json`。AI 评测将 data 换为 ai，并使用另一新文件名。两者均实际调用外部服务；私有快照不能进入公共仓库。
 
 扩展验收见 docs/08_扩展真实数据与模型验收报告.md：30股真实数据离线评测、100道设计题（70已运行、30保留）。产品仍为6只样本，不将扩测覆盖宣传为产品股票池。复现细节见 evaluation/README.md。
+
+## 受限演示保护
+
+每会话每分钟2次外部操作、单实例每日100次、单进程最多2操作并发；失败尝试计数，原快照比较不计数。一次取数可包含多次HTTP请求。`USAGE_DB_PATH`可指定持久化SQLite文件，默认`.runtime/usage.sqlite3`。本地计数丢失或多副本部署无法保证跨实例日上限，不是账户金额上限。详情及54项回归、干净环境/留出题记录见 docs/11_留出评测环境复现与演示限额验收.md。

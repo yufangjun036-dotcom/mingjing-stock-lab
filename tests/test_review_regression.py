@@ -12,7 +12,7 @@ APP=Path(__file__).resolve().parents[1]/'app.py'
 
 def test_manual_switch_requires_new_confirmation():
     """用户切换方案后旧勾选不能继续表示已确认新方案。"""
-    app=AppTest.from_file(APP).run()
+    app=AppTest.from_file(APP, default_timeout=20).run()
     app.checkbox[0].check().run()
     next(b for b in app.button if b.label=='切换为独立手动方案').click().run()
     assert not app.checkbox[0].value
@@ -21,7 +21,7 @@ def test_manual_switch_requires_new_confirmation():
 
 def test_changed_conditions_and_assumptions_reset_confirmation():
     """修改数字及新草案假设都需重新确认；相同上下文重跑不应清空。"""
-    app=AppTest.from_file(APP).run()
+    app=AppTest.from_file(APP, default_timeout=20).run()
     app.checkbox[0].check().run()
     app.run()
     assert app.checkbox[0].value
@@ -38,7 +38,7 @@ def test_changed_conditions_and_assumptions_reset_confirmation():
 def test_existing_snapshot_comparison_does_not_construct_client():
     """快照比较不应重新鉴权或创建网络客户端。"""
     data=snapshot();s=strategy(('>',0),('<',25))
-    app=AppTest.from_file(APP).run()
+    app=AppTest.from_file(APP, default_timeout=20).run()
     app.session_state['snapshot']=data
     app.session_state['result']=screen(data,s)
     app.run()

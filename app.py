@@ -1,5 +1,8 @@
 """明镜选股入口：真实数据原型，所有执行由显式按钮触发。"""
 import streamlit as st
+from uuid import uuid4
+from contextlib import nullcontext
+from services.usage_guard import get_usage_guard
 from config import load_settings
 from core.schemas import Condition, Strategy
 from core.intent_parser import parse_intent, draft_to_strategy
@@ -21,6 +24,7 @@ def main():
     render_header()
     settings = load_settings()
     rehydrate_state(st.session_state)
+    st.session_state.setdefault("usage_session", uuid4().hex)
     st.session_state.setdefault("conditions", [{"metric_id":"pe_ttm","operator":">","value":"0"},
                                                 {"metric_id":"pe_ttm","operator":"<","value":"25"}])
     st.session_state.setdefault("editor_revision", 0)
@@ -32,7 +36,7 @@ def main():
         submitted = st.form_submit_button("让 AI 解析")
     if submitted:
         try:
-            with st.spinner("正在解析意图…"):
+            with get_usage_guard().reserve(st.session_state["usage_session"]), st.spinner("正在解析意图…"):
                 draft = parse_intent(text, settings)
             st.session_state["draft"] = draft
             st.session_state["blocked"] = bool(draft.clarifications or draft.unsupported or draft.refusal_reason)
@@ -98,7 +102,8 @@ def main():
             if fresh or union:
                 client = FuyaoClient(settings)
             previous = st.session_state.get("result")
-            with st.spinner("正在筛选…"):
+            quota = get_usage_guard().reserve(st.session_state["usage_session"]) if fresh or union else nullcontext()
+            with quota, st.spinner("正在筛选…"):
                 if union:
                     snapshot, baseline, result, changes = compare_with_new_snapshot(client, previous, strategy)
                 else:
