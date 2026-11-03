@@ -75,7 +75,17 @@ def main():
         strategy = validate_strategy(Strategy(conditions=tuple(Condition(id=f"c{i+1}", **row) for i,row in enumerate(edited))))
     except (ValueError, TypeError):
         st.warning("条件无效或存在冲突，请检查字段、数字及上下界。")
-    confirm = st.checkbox("我已检查条件和假设，确认按上表执行", value=False)
+    # 确认绑定当前有效方案和模型草案；修改条件或假设后必须重新检查。
+    # 在创建本轮复选框之前清空状态，普通重跑且上下文未变时保留勾选。
+    confirmation_context = (
+        strategy.model_dump_json() if strategy else None,
+        draft.model_dump_json() if draft else None,
+        st.session_state["editor_revision"],
+    )
+    if st.session_state.get("confirmation_context") != confirmation_context:
+        st.session_state["confirmed_current_strategy"] = False
+        st.session_state["confirmation_context"] = confirmation_context
+    confirm = st.checkbox("我已检查条件和假设，确认按上表执行", key="confirmed_current_strategy")
     fresh = st.button("获取真实数据并筛选", type="primary", disabled=strategy is None or st.session_state["blocked"] or not confirm)
     with st.expander("比较修改前后 · 使用同一份数据解释变化"):
         st.caption("已有结果后再修改条件。原快照缺少新增指标时，选择补齐数据，两个方案会一起重算。")
@@ -84,7 +94,9 @@ def main():
     if fresh or compare or union:
         client = None
         try:
-            client = FuyaoClient(settings)
+            # 原快照比较纯本地执行；仅新取数或补齐指标时创建鉴权客户端。
+            if fresh or union:
+                client = FuyaoClient(settings)
             previous = st.session_state.get("result")
             with st.spinner("正在筛选…"):
                 if union:
