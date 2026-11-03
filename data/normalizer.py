@@ -152,9 +152,13 @@ def normalize_financials(code, income, indicators, report):
     lookup = {}
     if indicators:
         for group in indicators["data"]["abilities"]:
-            for indicator in group.get("indicators", []) if isinstance(group, dict) else []:
-                if isinstance(indicator, dict):
-                    lookup.setdefault(indicator.get("index_id"), []).append(indicator.get("value"))
+            # 外层列表合法不代表嵌套列表合法；结构异常须显式标冲突，不能崩溃或当普通缺失。
+            if not isinstance(group, dict) or not isinstance(group.get("indicators"), list):
+                return {metric: MetricValue(quality="conflict", reason="财务指标分组结构异常") for metric in fields}
+            for indicator in group["indicators"]:
+                if not isinstance(indicator, dict) or not isinstance(indicator.get("index_id"), str):
+                    return {metric: MetricValue(quality="conflict", reason="财务指标条目结构异常") for metric in fields}
+                lookup.setdefault(indicator["index_id"], []).append(indicator.get("value"))
     results = {}
     for metric, (field, index_id) in fields.items():
         if metric == "gross_margin":
