@@ -9,6 +9,8 @@ from services.screening_service import run_screening, compare_results, compare_w
 from services.strategy_io import import_strategy, export_strategy
 from ui.results_panel import render_results
 from ui.condition_panel import render_condition_editor
+from services.session_state import rehydrate_state
+from pydantic import ValidationError
 
 
 def main():
@@ -23,6 +25,7 @@ def main():
         st.write("财务累计口径已用茅台原始公告抽样核对，其他股票不声称逐份公告审计；每次取数用利润表复算并与供应商指标交叉验证。固定报告期不代表自动发现最新报告。")
     st.caption("AI 提出草案 → 你确认条件 → Python 筛选 → 查看原字段证据。本产品不提供收益保证或买卖建议。")
     settings = load_settings()
+    rehydrate_state(st.session_state)
     st.session_state.setdefault("conditions", [{"metric_id":"pe_ttm","operator":">","value":"0"},
                                                 {"metric_id":"pe_ttm","operator":"<","value":"25"}])
     st.session_state.setdefault("editor_revision", 0)
@@ -94,6 +97,8 @@ def main():
             st.session_state["comparison_base"] = baseline
             st.session_state["snapshot"],st.session_state["result"] = snapshot,result
             st.rerun()
+        except ValidationError:
+            st.error("数据结构校验失败，本次未生成新结果；请重新获取数据。")
         except (ProviderError, ValueError) as exc:
             st.error(str(exc))
             st.warning("本次执行未成功；下方如有结果仍是此前的旧结果。")

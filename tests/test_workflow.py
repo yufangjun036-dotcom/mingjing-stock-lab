@@ -35,3 +35,16 @@ def test_ui_confirm_and_result():
         assert not app.exception
         assert fetch.call_count == 1
         assert app.session_state['changes'] == []
+
+
+def test_rehydrate_old_class_objects():
+    """模拟热更新前的类实例，仅经 JSON 恢复为当前类型，不执行取数。"""
+    from types import SimpleNamespace
+    from services.session_state import rehydrate_state
+    from core.schemas import DatasetSnapshot
+    from tests.test_core import snapshot
+    old=snapshot()
+    state={'snapshot':SimpleNamespace(model_dump_json=lambda:old.model_dump_json())}
+    rehydrate_state(state)
+    assert isinstance(state['snapshot'],DatasetSnapshot)
+    assert state['snapshot'].id==old.id
