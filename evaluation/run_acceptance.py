@@ -25,13 +25,13 @@ def canonical(conditions):
     return sorted((c.metric_id, c.operator, str(Decimal(c.value).normalize())) for c in conditions)
 
 
-def evaluate_ai(output):
+def evaluate_ai(output, cases_path=None, repeats=2):
     """运行预先固定的 24 题两遍；错误和原始结构化草案逐条保留。"""
-    path = ROOT / 'evaluation/intent_cases.json'
+    path = cases_path or ROOT / 'evaluation/intent_cases.json'
     cases = json.loads(path.read_text())
     settings = load_settings()
     records = []
-    for repeat in (1, 2):
+    for repeat in range(1, repeats + 1):
         for case in cases:
             row = {'id':case['id'], 'repeat':repeat, 'mode':case['mode'], 'text':case['text']}
             try:
@@ -134,8 +134,13 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('mode',choices=['ai','data'])
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--cases',type=Path)
+    parser.add_argument('--repeats',type=int,default=2)
     args=parser.parse_args()
     if args.output.exists():
         parser.error('输出文件已存在；请换新文件名，保留先前结果')
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    (evaluate_ai if args.mode=='ai' else evaluate_data)(args.output)
+    if args.mode == 'ai':
+        evaluate_ai(args.output,args.cases,args.repeats)
+    else:
+        evaluate_data(args.output)

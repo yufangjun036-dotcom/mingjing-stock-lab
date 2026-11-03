@@ -75,3 +75,5 @@ python3.13 -m venv .venv
 详见 docs/07_真实数据验收与回归报告.md。真实模型按原判定规则 46/48 通过；六股票快照 144 次判断一致不代表全市场或预测准确率。软件回归 48 项通过，包含构造异常测试。当前不具备多人正式公开使用的完整验收证据。
 
 真实数据复验：`.venv/bin/python evaluation/run_acceptance.py data --output ../acceptance/new_data.json`。AI 评测将 data 换为 ai，并使用另一新文件名。两者均实际调用外部服务；私有快照不能进入公共仓库。
+
+扩展验收见 docs/08_扩展真实数据与模型验收报告.md：30股真实数据离线评测、100道设计题（70已运行、30保留）。产品仍为6只样本，不将扩测覆盖宣传为产品股票池。复现细节见 evaluation/README.md。
