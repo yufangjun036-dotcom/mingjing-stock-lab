@@ -1,0 +1,11 @@
+dist/
+site.tar.gz
+.env
+.env.*
+!.env.example
+.sites-runtime/
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+.streamlit/secrets.toml
