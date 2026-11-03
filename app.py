@@ -9,6 +9,8 @@ from services.screening_service import run_screening, compare_results, compare_w
 from services.strategy_io import import_strategy, export_strategy
 from ui.results_panel import render_results
 from ui.condition_panel import render_condition_editor
+from ui.layout import render_header
+from ui.comparison_panel import render_comparison
 from services.session_state import rehydrate_state
 from pydantic import ValidationError
 
@@ -16,20 +18,15 @@ from pydantic import ValidationError
 def main():
     """渲染意图、可编辑条件、结果和同快照比较。"""
     st.set_page_config(page_title="明镜选股", page_icon="🔎", layout="wide")
-    st.title("明镜选股")
-    st.write("把选股意图变成可以检查、修改和复算的条件。")
-    st.info("六只样本研究版 · 6 项指标 · 2026 年前三季度累计财务。股票池固定，不代表全市场。")
-    with st.expander("指标口径与使用边界"):
-        st.write("估值：PE TTM / PB MRQ，单位倍；财务：收入同比、归母净利同比、毛利率，单位 %，金额为人民币元。上年利润非正时不计算普通增长率。")
-        st.write("波动率：截至北京时间昨天及以前，最后 61 个真实交易日收盘价产生 60 个简单收益率，样本标准差×√252×100；供应商前复权因子未独立重建。")
-        st.write("财务累计口径已用茅台原始公告抽样核对，其他股票不声称逐份公告审计；每次取数用利润表复算并与供应商指标交叉验证。固定报告期不代表自动发现最新报告。")
-    st.caption("AI 提出草案 → 你确认条件 → Python 筛选 → 查看原字段证据。本产品不提供收益保证或买卖建议。")
+    render_header()
     settings = load_settings()
     rehydrate_state(st.session_state)
     st.session_state.setdefault("conditions", [{"metric_id":"pe_ttm","operator":">","value":"0"},
                                                 {"metric_id":"pe_ttm","operator":"<","value":"25"}])
     st.session_state.setdefault("editor_revision", 0)
     st.session_state.setdefault("blocked", False)
+    st.subheader("01 · 描述选股需求")
+    st.caption("先明确你关心的指标与阈值；模糊表达会请求澄清，AI 不会直接替你执行。")
     with st.form("intent_form"):
         text = st.text_area("描述你的选股条件", max_chars=500, placeholder="例如：市盈率大于 0 且小于 25 倍")
         submitted = st.form_submit_button("让 AI 解析")
@@ -58,18 +55,19 @@ def main():
         st.session_state["conditions"] = [{"metric_id":"pe_ttm","operator":">","value":"0"}]
         st.session_state["editor_revision"] += 1
         st.rerun()
-    uploaded = st.file_uploader("载入已保存方案（只载入，不自动执行）", type=["json"])
-    if uploaded and st.button("载入为手动草案"):
-        try:
-            imported = import_strategy(uploaded.getvalue())
-            st.session_state["conditions"] = [{"metric_id":c.metric_id,"operator":c.operator,"value":str(c.value)} for c in imported.conditions]
-            st.session_state["draft"] = None
-            st.session_state["blocked"] = False
-            st.session_state["editor_revision"] += 1
-            st.rerun()
-        except ValueError:
-            st.error("方案文件无效、版本不支持或含未开放指标")
-    st.subheader("检查和修改条件")
+    with st.expander("方案文件 · 导入已保存的条件"):
+        uploaded = st.file_uploader("载入已保存方案（只载入，不自动执行）", type=["json"])
+        if uploaded and st.button("载入为手动草案"):
+            try:
+                imported = import_strategy(uploaded.getvalue())
+                st.session_state["conditions"] = [{"metric_id":c.metric_id,"operator":c.operator,"value":str(c.value)} for c in imported.conditions]
+                st.session_state["draft"] = None
+                st.session_state["blocked"] = False
+                st.session_state["editor_revision"] += 1
+                st.rerun()
+            except ValueError:
+                st.error("方案文件无效、版本不支持或含未开放指标")
+    st.subheader("02 · 检查条件并执行")
     st.caption("所有条件为 AND；指标名称注明单位，输入 20 表示 20% 或 20 倍。默认示例阈值不代表投资推荐。")
     edited = render_condition_editor(st.session_state["conditions"], st.session_state["editor_revision"])
     strategy = None
@@ -78,9 +76,11 @@ def main():
     except (ValueError, TypeError):
         st.warning("条件无效或存在冲突，请检查字段、数字及上下界。")
     confirm = st.checkbox("我已检查条件和假设，确认按上表执行", value=False)
-    fresh = st.button("获取真实数据并筛选", disabled=strategy is None or st.session_state["blocked"] or not confirm)
-    compare = st.button("使用原快照重算并比较", disabled=strategy is None or "result" not in st.session_state or st.session_state["blocked"] or not confirm)
-    union = st.button("补齐新增指标，用新快照重算两方案", disabled=strategy is None or "result" not in st.session_state or st.session_state["blocked"] or not confirm)
+    fresh = st.button("获取真实数据并筛选", type="primary", disabled=strategy is None or st.session_state["blocked"] or not confirm)
+    with st.expander("比较修改前后 · 使用同一份数据解释变化"):
+        st.caption("已有结果后再修改条件。原快照缺少新增指标时，选择补齐数据，两个方案会一起重算。")
+        compare = st.button("使用原快照重算并比较", disabled=strategy is None or "result" not in st.session_state or st.session_state["blocked"] or not confirm)
+        union = st.button("补齐新增指标，用新快照重算两方案", disabled=strategy is None or "result" not in st.session_state or st.session_state["blocked"] or not confirm)
     if fresh or compare or union:
         client = None
         try:
@@ -113,13 +113,9 @@ def main():
             st.warning("草案已改变或无效；下方仍展示上一次执行结果，请确认后重算。")
         render_results(result, st.session_state["snapshot"])
         if st.session_state.get("changes") is not None:
-            st.subheader("同快照条件变化影响")
-            baseline = st.session_state.get("comparison_base")
-            if baseline:
-                st.caption("两个方案均在上方标识的同一个快照上执行。新增指标重取数时，基准方案也已重算。")
-                st.write("基准条件", baseline.strategy.model_dump(mode="json")["conditions"])
-                st.write("当前条件", result.strategy.model_dump(mode="json")["conditions"])
-            st.write(st.session_state["changes"] or "没有股票改变筛选状态。")
+            render_comparison(st.session_state.get("comparison_base"), result,
+                              st.session_state["changes"])
+
 
 
 if __name__ == "__main__":

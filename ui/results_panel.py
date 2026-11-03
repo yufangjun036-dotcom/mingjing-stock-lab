@@ -1,13 +1,15 @@
 """结果展示和逐字段证据查看。"""
 import streamlit as st
 from core.result_explainer import explain_condition
+from ui.layout import condition_rows
 
 LABELS = {"selected":"入选", "excluded":"排除", "unknown":"无法判断"}
 
 
 def render_results(result, snapshot):
     """展示绑定条件和快照时间，防止草案变化误标旧结果。"""
-    st.subheader("筛选结果")
+    st.divider()
+    st.subheader("03 · 查看结果与证据")
     st.caption(f"固定六只开发样本 · 取数时间 {snapshot.created_at} · 快照 {snapshot.id[:12]}")
     st.caption("估值时间是供应商批次更新时间；逐股成交时间和估值分母未独立核验。结果不代表全市场筛选。")
     if snapshot.history_cutoff:
@@ -21,7 +23,7 @@ def render_results(result, snapshot):
         column.metric(label, sum(r.status == status for r in result.rows))
     st.dataframe([{"股票代码":r.thscode,"股票名称":r.name,"结论":LABELS[r.status]} for r in result.rows], hide_index=True)
     with st.expander("查看本次实际执行的条件"):
-        st.json(result.strategy.model_dump(mode="json"))
+        st.dataframe(condition_rows(result.strategy), hide_index=True)
     for row in result.rows:
         with st.expander(f"{row.name} ({row.thscode}) · {LABELS[row.status]}"):
             for evaluation in row.evaluations:
