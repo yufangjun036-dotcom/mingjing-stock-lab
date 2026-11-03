@@ -10,6 +10,8 @@ from core.schemas import MetricValue, StockRecord
 from data.provider import ProviderError
 from data.normalizer import normalize_stock, build_snapshot, normalize_financials, normalize_history
 
+from services.snapshot_cache import namespace, cache_key, get_snapshot, put_snapshot, flight_lock
+
 FINANCIALS = {"revenue_yoy", "profit_yoy", "gross_margin"}
 
 
@@ -25,6 +27,44 @@ def required_sources(strategy):
 
 
 def fetch_snapshot(client, strategy, extra_strategy=None, now=None):
+    """真实客户端复用有效快照，并合并同数据范围的同时取数。"""
+    scope = getattr(client, "cache_namespace", None)
+    if not isinstance(scope, str) or now is not None:
+        return _fetch_snapshot_uncached(client, strategy, extra_strategy, now)
+    key = cache_key(scope, strategy, extra_strategy)
+    lock = flight_lock(key)
+    while not lock.acquire(timeout=0.1):
+        cancelled = getattr(client, 'cancel_event', None)
+        if cancelled is not None and cancelled.is_set():
+            raise ProviderError('cancelled', '本次取数已取消')
+    try:
+        cached = get_snapshot(key)
+        if cached is not None:
+            return cached
+        snapshot = _fetch_snapshot_uncached(client, strategy, extra_strategy, now)
+        cancelled = getattr(client, 'cancel_event', None)
+        if cancelled is None or not cancelled.is_set():
+            put_snapshot(key, snapshot)
+        return snapshot
+    finally:
+        lock.release()
+
+
+def cached_screening(settings, strategy, baseline=None):
+    """页面联网前查缓存：命中不创建客户端、不消耗外部调用额度。"""
+    validate_strategy(strategy)
+    snapshot = get_snapshot(cache_key(namespace(settings.fuyao_api_key), strategy,
+                                      baseline.strategy if baseline else None))
+    if snapshot is None:
+        return None
+    result = screen(snapshot, strategy)
+    if baseline is None:
+        return snapshot, result
+    old = screen(snapshot, baseline.strategy)
+    return snapshot, old, result, compare_results(old, result)
+
+
+def _fetch_snapshot_uncached(client, strategy, extra_strategy=None, now=None):
     """最大两个股票任务并发；部分失败保留所有股票及安全错误。"""
     validate_strategy(strategy)
     if extra_strategy:

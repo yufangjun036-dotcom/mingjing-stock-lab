@@ -42,7 +42,10 @@ class UsageGuard:
                     count=db.execute('SELECT COUNT(*) FROM events WHERE session=?',(session,)).fetchone()[0]
                     used=db.execute('SELECT count FROM daily WHERE day=?',(day,)).fetchone()
                     if count>=self.per_minute:
-                        raise UsageLimitError('本会话每分钟最多两个外部操作，请稍后再试')
+                        oldest=db.execute('SELECT MIN(ts) FROM events WHERE session=?',(session,)).fetchone()[0]
+                        import math
+                        remaining=max(1, math.ceil(60-(now-oldest)))
+                        raise UsageLimitError(f'本会话每分钟最多{self.per_minute}次外部操作，最近60秒已使用{count}次（AI解析和取数分别计次），请约{remaining}秒后重试。保留当前条件，无需再点AI解析。')
                     if used and used[0]>=self.daily:
                         raise UsageLimitError('本演示今日100次外部操作额度已用完，请明日再试')
                     db.execute('INSERT INTO daily(day,count) VALUES (?,1) ON CONFLICT(day) DO UPDATE SET count=count+1',(day,))

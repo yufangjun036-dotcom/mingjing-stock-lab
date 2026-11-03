@@ -1,0 +1,3 @@
+# 禁用匿名统计，避免受限本地环境尝试向用户主目录写入机器标识。
+[browser]
+gatherUsageStats = false

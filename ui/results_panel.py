@@ -6,7 +6,7 @@ from ui.layout import condition_rows
 LABELS = {"selected":"入选", "excluded":"排除", "unknown":"无法判断"}
 
 
-def render_results(result, snapshot):
+def render_results(result, snapshot, key_prefix="main"):
     """展示绑定条件和快照时间，防止草案变化误标旧结果。"""
     st.divider()
     st.subheader("03 · 查看结果与证据")
@@ -24,6 +24,9 @@ def render_results(result, snapshot):
     st.dataframe([{"股票代码":r.thscode,"股票名称":r.name,"结论":LABELS[r.status]} for r in result.rows], hide_index=True)
     with st.expander("查看本次实际执行的条件"):
         st.dataframe(condition_rows(result.strategy), hide_index=True)
+    st.caption("数据最多复用五分钟，保留原采集时间。详细证据按需加载，避免首次展示大量历史行情表格。")
+    if not st.checkbox("展开逐家公司解释与原始证据", key=f"{key_prefix}_evidence_{snapshot.id}_{hash(result.strategy.model_dump_json())}"):
+        return
     for row in result.rows:
         with st.expander(f"{row.name} ({row.thscode}) · {LABELS[row.status]}"):
             for evaluation in row.evaluations:

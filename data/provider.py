@@ -1,5 +1,7 @@
 """扶摇 HTTPS 客户端：业务错误和传输失败均不能伪装成空结果。"""
 import re
+import logging
+from time import monotonic
 from datetime import datetime, timezone
 import httpx
 from config import build_ssl_context
@@ -27,6 +29,8 @@ class FuyaoClient:
         """依赖注入 transport 供离线测试；真实请求使用可信 CA。"""
         if not settings.fuyao_api_key:
             raise ProviderError("configuration", "尚未配置扶摇密钥")
+        from services.snapshot_cache import namespace
+        self.cache_namespace = namespace(settings.fuyao_api_key)
         self.client = httpx.Client(base_url=BASE_URL, timeout=15,
                                   headers={"X-api-key": settings.fuyao_api_key},
                                   verify=build_ssl_context(settings), transport=transport)
@@ -36,6 +40,31 @@ class FuyaoClient:
         self.client.close()
 
     def request_json(self, path, params):
+        """记录端点耗时，不记录鉴权信息；取消后不再发起下一次请求。"""
+        cancelled = getattr(self, "cancel_event", None)
+        if cancelled is not None and cancelled.is_set():
+            raise ProviderError("cancelled", "本次取数已取消")
+        label = {VALUATIONS: "估值", INCOME: "利润表", INDICATORS: "财务指标",
+                 HISTORY: "历史行情", CALENDAR: "交易日历"}.get(path, "数据")
+        code = params.get("thscode", "")
+        callback = getattr(self, "progress_callback", None)
+        started = monotonic()
+        if callback:
+            callback(f"正在获取{code} {label}")
+        outcome = "失败"
+        try:
+            result = self._request_json(path, params)
+            if cancelled is not None and cancelled.is_set():
+                raise ProviderError("cancelled", "本次取数已取消")
+            outcome = "完成"
+            return result
+        finally:
+            elapsed = monotonic() - started
+            logging.getLogger(__name__).info("data_request endpoint=%s code=%s outcome=%s elapsed=%.2fs", path, code, outcome, elapsed)
+            if callback:
+                callback(f"{code} {label}{outcome}（{elapsed:.1f}秒）")
+
+    def _request_json(self, path, params):
         """校验 HTTP、JSON、业务码和数据结构，并附取数时间。"""
         if path not in ENDPOINTS:
             raise ValueError("当前客户端尚未启用此端点")
