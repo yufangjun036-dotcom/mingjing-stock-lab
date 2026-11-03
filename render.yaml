@@ -1,0 +1,15 @@
+# 备用平台部署定义；不包含任何密钥值。
+services:
+  - type: web
+    name: mingjing-stock-lab-backup
+    runtime: python
+    plan: free
+    buildCommand: pip install -r deploy/requirements-render.txt
+    startCommand: python scripts/start_web.py
+    healthCheckPath: /_stcore/health
+    envVars:
+      # 只创建私密变量输入项，真实值须在平台中另行授权配置。
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FUYAO_API_KEY
+        sync: false
