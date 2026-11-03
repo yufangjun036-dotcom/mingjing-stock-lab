@@ -167,7 +167,7 @@ def normalize_financials(code, income, indicators, report):
         else:
             inputs = ((current, field), (prior, field))
             formula = "(本年同期/上年同期-1)×100；年初至 9 月末累计；上年基数须为正"
-        evidence = tuple(source_evidence(income, f"{code}.{row['fiscal_year']}Q3.{f}", row.get(f), "元", report,
+        evidence = tuple(source_evidence(income, f"{code}.{row['fiscal_year']}Q3.{f}", row.get(f), "元", f"{row['fiscal_year']}-3",
                                          formula, row.get("report_date_ms")) for row,f in inputs)
         if metric == "gross_margin":
             value = compute_gross_margin(current.get("operating_income"), current.get("operating_costs"), evidence, verified=True)

@@ -73,3 +73,12 @@ def test_stale_batch():
     assert dict(normalize_stock('600519.SH',data).metrics)['pe_ttm'].quality=='stale'
     data['data']['timestamp']=None
     assert dict(normalize_stock('600519.SH',data).metrics)['pe_ttm'].quality=='unverified'
+
+
+def test_evidence_report_period_tracks_each_input_year():
+    """原始金额须标明自身年度，不能把上年同期标为本年报告期。"""
+    income, indicators = inputs()
+    values = normalize_financials('600519.SH', income, indicators, '2026-3')
+    for metric in ('revenue_yoy', 'profit_yoy'):
+        assert [e.report_period for e in values[metric].evidence] == ['2026-3', '2025-3', '2026-3']
+    assert [e.report_period for e in values['gross_margin'].evidence] == ['2026-3'] * 3
