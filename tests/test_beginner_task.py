@@ -13,6 +13,7 @@ from services.usage_guard import UsageLimitError
 def sample():
     """分别覆盖两项增长、利润减少和利润缺失。"""
     def val(n):
+        """构造明确标记质量状态的测试指标。"""
         return MetricValue(value=Decimal(n),quality='valid') if n else MetricValue(quality='missing',reason='构造缺失')
     return DatasetSnapshot(id='constructed-task',created_at='2026-11-04T05:40:00+08:00',available_metrics=('revenue_yoy','profit_yoy'),records=tuple(
         StockRecord(thscode=str(i),name=f'构造公司{i}',metrics=(('revenue_yoy',val(rev)),('profit_yoy',val(profit))))
@@ -32,6 +33,7 @@ def test_first_task_and_compare_reuse_snapshot_and_preserve_failure():
     """没有输入或阈值也能完成任务；比较不联网，失败不覆盖旧结果。"""
     snapshot=sample()
     def execute(client,strategy,snapshot_arg=None):
+        """以测试替身执行首次任务，检查结果状态。"""
         return run_screening(None,strategy,snapshot_arg or snapshot)
     with patch('ui.beginner_task_panel.FuyaoClient',return_value=MagicMock()) as client, patch('ui.beginner_task_panel.run_screening',side_effect=execute):
         app=AppTest.from_file(Path(__file__).resolve().parents[1]/'app.py',default_timeout=20).run()

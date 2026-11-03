@@ -34,9 +34,11 @@ def test_two_cold_queries_share_fetch():
     client=FakeClient();client.cache_namespace='parallel-test'
     barrier=Barrier(2)
     def slow(*a,**kw):
+        """构造延迟取数以检验同范围请求合并。"""
         sleep(.08)
         return snapshot
     def request():
+        """发起并发测试请求并返回缓存查询结果。"""
         barrier.wait()
         return fetch_snapshot(client,s)
     with patch.object(cache,'_CACHE',cache.OrderedDict()), patch('services.screening_service._fetch_snapshot_uncached',side_effect=slow) as fetch:

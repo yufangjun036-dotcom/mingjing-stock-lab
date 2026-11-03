@@ -16,6 +16,7 @@ def test_timeout_keeps_slot_until_worker_finishes_and_discards_late_result():
     client.close.side_effect = closed.set
     @contextmanager
     def reserve(_):
+        """记录测试任务占用和释放并发槽的生命周期。"""
         try:
             entered.set()
             yield
@@ -23,6 +24,7 @@ def test_timeout_keeps_slot_until_worker_finishes_and_discards_late_result():
             exited.set()
     guard = MagicMock(); guard.reserve.side_effect = reserve
     def blocked(c):
+        """构造受阻任务以验证超时后的资源管理。"""
         release.wait(2)
         return '迟到结果'
     try:

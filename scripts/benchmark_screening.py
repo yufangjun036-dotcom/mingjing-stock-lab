@@ -24,9 +24,11 @@ def main():
     class MeasuredClient(FuyaoClient):
         """仅统计实际网络请求数量，不记录响应或鉴权头。"""
         def _request_json(self,path,params):
+            """统计一次实际接口请求，随后调用真实客户端。"""
             with lock: calls.append(path)
             return super()._request_json(path,params)
     def cold(session):
+        """在调用额度内执行冷查询，并确保释放客户端。"""
         started=monotonic()
         with get_usage_guard().reserve(session):
             client=MeasuredClient(settings)
@@ -34,6 +36,7 @@ def main():
             finally: client.close()
         return snapshot,result,monotonic()-started
     def record(label,snapshot,result,seconds,requests):
+        """保存耗时、请求数量与快照标识，不保存密钥。"""
         results.append(dict(case=label,seconds=round(seconds,4),network_requests=requests,snapshot_id=snapshot.id,
                             selected=sum(r.status=='selected' for r in result.rows),source_errors=list(snapshot.source_errors)))
     snapshot,result,elapsed=cold('perf-cold-'+datetime.now().isoformat());record('cold',snapshot,result,elapsed,len(calls))
@@ -46,6 +49,7 @@ def main():
     with cache._LOCK:cache._CACHE.clear()
     count=len(calls);barrier=Barrier(2)
     def concurrent(i):
+        """等待两个测试线程就绪后同时开始查询。"""
         barrier.wait()
         return cold('perf-parallel-'+str(i)+'-'+datetime.now().isoformat())
     with ThreadPoolExecutor(max_workers=2) as pool: parallel=list(pool.map(concurrent,range(2)))
