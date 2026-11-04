@@ -11,6 +11,7 @@ from data.provider import FuyaoClient, ProviderError
 from services.screening_service import run_screening, compare_results, compare_with_new_snapshot, cached_screening
 from services.strategy_io import import_strategy, export_strategy
 from ui.results_panel import render_results
+from ui.intent_notes import render_assumptions, MISSING_DATA_POLICY
 from ui.condition_panel import render_condition_editor
 from ui.layout import render_header
 from ui.external_operation import run_external_operation
@@ -105,7 +106,8 @@ def main():
         with st.expander("查看原始描述（输入记录，不是解析结果）", expanded=False):
             st.text(st.session_state.get("intent_origin", "此前解析的需求"))
         st.caption("以下是生成条件时的解释，真正执行的是下面的条件表。手动修改表格后，请重新检查是否符合你的意思。")
-        for label, values in (("待确认假设",draft.assumptions),("请补充后重新解析",draft.clarifications),("当前不支持",draft.unsupported)):
+        render_assumptions(draft.assumptions)
+        for label, values in (("请补充后重新解析",draft.clarifications),("当前不支持",draft.unsupported)):
             for value in values:
                 st.warning(f"{label}：{value}")
         if draft.refusal_reason:
@@ -132,6 +134,7 @@ def main():
             except ValueError:
                 st.error("方案文件无效、版本不支持或含未开放指标")
     st.subheader("02 · 检查条件并执行")
+    st.info(MISSING_DATA_POLICY)
     st.caption("所有条件为 AND；指标名称注明单位，输入 20 表示 20% 或 20 倍。默认示例阈值不代表投资推荐。")
     edited = render_condition_editor(st.session_state["conditions"], st.session_state["editor_revision"])
     strategy = None
